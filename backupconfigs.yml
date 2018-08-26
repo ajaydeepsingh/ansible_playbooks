@@ -1,0 +1,38 @@
+---
+- name: Save Configurations (IOS)
+  hosts: cisco
+  gather_facts: no
+  vars:
+    creds:
+      host: "{{ IP }}"
+      username: "{{ un }}"
+      password: "{{ pw }}"
+  tasks:
+    - ios_command:
+        provider: cli
+        commands: show run
+      register: show_run
+
+    - copy:
+        content: "{{ show_run.stdout[0] }}"
+        dest: "CFGS/{{ inventory_hostname }}.txt"
+
+- name: Save running config to file (NXOS)
+  hosts: nxos
+  gather_facts: no
+  vars:
+    creds:
+        host: "{{ IP }}"
+        username: "{{ un }}"
+        password: "{{ pw }}"
+        transport: cli
+
+  tasks:
+    - nxos_command:
+        provider: cli
+        commands: show running-config
+      register: show_run
+
+    - copy:
+        content: "{{ show_run.stdout[0] }}"
+        dest: "CFGS/{{ inventory_hostname }}.txt" 

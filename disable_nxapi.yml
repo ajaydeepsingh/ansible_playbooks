@@ -1,0 +1,56 @@
+---
+# GLOBAL ATLANTA VPN SETTINGS # WILL BE APPLIED TO BOTH #
+- hosts: DS
+  gather_facts: false
+  connection: local
+  vars:
+    cli:
+      host: "{{ IP }}"
+      username: "{{ un }}"
+      password: "{{ pw }}"
+      authorize: no
+      transport: cli
+
+  tasks:
+    - name: Ensure nxapi is disabled
+      nxos_feature:
+        feature: nxapi
+        state: disabled
+        provider: "{{ cli }}"
+
+    - name: Delete crt and key files on the switch
+      file:
+        path: bootflash://nxapi.key
+        state: absent
+
+    - name: Delete crt and key files on the switch
+      file:
+        path: bootflash://nxapi.crt
+        state: absent
+
+    - name: Ensure scpserver is disabled
+      nxos_feature:
+        feature: scpServer
+        state: disabled
+        provider: "{{ cli }}"
+
+
+##### Ansible is ass sometimes
+  # - name: disable NX API
+  #   nxos_command:
+  #     lines:
+  #       - no feature nxapi
+
+  #     provider: "{{ cli }}"
+  #     match: exact
+  #   register: result
+
+  # tasks:
+  #   - name: disable SCP Server
+  #     nxos_command:
+  #       lines:
+  #         - no feature scp-server
+          
+  #       provider: "{{ cli }}"
+  #       match: exact
+  #     register: result

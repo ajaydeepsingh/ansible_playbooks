@@ -1,0 +1,56 @@
+---
+# GLOBAL ATLANTA VPN SETTINGS # WILL BE APPLIED TO BOTH #
+- hosts: DS
+  gather_facts: false
+  connection: local
+  vars:
+    cli:
+      host: "{{ IP }}"
+      username: "{{ un }}"
+      password: "{{ pw }}"
+      authorize: no
+      transport: cli
+
+  tasks:
+    - name: bootstrap NX API
+      nxos_config:
+        lines:
+          - feature nxapi
+          - nxapi https port 8443
+          - nxapi sandbox
+          - feature scp-server
+
+        provider: "{{ cli }}"
+        match: exact
+      register: result
+
+    - name: Check if crt exists
+      stat:
+        path: bootflash://nxapi.crt
+      register: cert_result
+
+    - name: Copy crt to bootflash
+      expect:
+        command: "scp /etc/ansible/playbooks/ds/nxapi.crt {{ un }}@{{ IP }}:bootflash"
+        responses:
+            (?i)Are you sure you want to continue connecting: "yes"
+            (?i)password: "{{ pw }}"
+        timeout: 600
+      register: result
+      when: cert_result.stat.exists == False
+
+    - name: check if key exists
+      stat:
+        path: bootflash://nxapi.key
+      register: key_result
+
+    - name: Copy key to bootflash
+      expect:
+        command: "scp /etc/ansible/playbooks/ds/nxapi.key {{ un }}@{{ IP }}:bootflash"
+        responses:
+            (?i)Are you sure you want to continue connecting: "yes"
+            (?i)password: "{{ pw }}"
+        timeout: 600
+      register: result
+      when: key_result.stat.exists == False
+    

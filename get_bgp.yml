@@ -1,0 +1,24 @@
+---
+# GLOBAL ATLANTA VPN SETTINGS # WILL BE APPLIED TO BOTH #
+- hosts: IR
+  gather_facts: false
+  connection: local
+  vars:
+    cli:
+      host: "{{ IP }}"
+      username: "{{ un }}"
+      password: "{{ pw }}"
+      authorize: no
+      transport: cli
+
+  tasks:
+    - name: grab BGP info
+      ios_command:
+        provider: cli
+        commands: show ip bgp neighbors
+      register: show_run
+
+    - copy:
+        content: "{{show_run}}"
+        dest: "CFGS/{{ inventory_hostname }}.txt"
+
